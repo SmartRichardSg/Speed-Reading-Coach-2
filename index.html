@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#eaf2ff">
+<title>Speed Reading Coach 2</title>
+<link rel="icon" href="icon.png" type="image/png">
+<link rel="apple-touch-icon" href="icon.png">
+<style>
+:root{--ink:#20304a;--muted:#5e6c83;--blue:#2d65c8;--pale:#edf4ff;--line:#d6e1f2;--white:#fff;--green:#217a53}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,#eaf2ff 0%,#f7f9fd 45%,#eef6f2 100%);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);line-height:1.45}
+main{max-width:850px;margin:auto;padding:18px 14px 32px}
+header{text-align:center;padding:8px 4px 16px}
+h1{font-size:clamp(1.7rem,5vw,2.3rem);margin:4px 0;color:#214b8f}
+.subtitle{color:var(--muted);margin:0}
+.card{background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 5px 18px rgba(44,76,124,.06)}
+h2{font-size:1.12rem;margin:0 0 12px}
+label{display:block;font-weight:650;margin:10px 0 6px}
+textarea,input,select,button{font:inherit}
+textarea,input[type="number"],input[type="text"],select{width:100%;border:1px solid #c6d4e8;border-radius:11px;padding:11px 12px;background:#fff;color:var(--ink)}
+textarea{min-height:130px;resize:vertical}
+.small{font-size:.9rem;color:var(--muted)}
+.row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+button{border:0;border-radius:12px;padding:11px 15px;font-weight:700;cursor:pointer;background:#e6edf8;color:#24436f}
+button.primary{background:var(--blue);color:white}
+button.good{background:var(--green);color:white}
+button:disabled{opacity:.45;cursor:not-allowed}
+#readingPanel{background:#172b49;color:#fff;min-height:190px;border-radius:16px;padding:22px 14px;display:flex;align-items:center;justify-content:center;text-align:center;margin:12px 0}
+#wordGroup{font-size:clamp(1.8rem,7vw,3rem);font-weight:750;letter-spacing:.02em;line-height:1.3;overflow-wrap:anywhere}
+#readingStatus{font-size:.9rem;color:#d5e3ff;margin-top:12px}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.stat{background:var(--pale);border-radius:12px;padding:12px;text-align:center}
+.stat strong{display:block;font-size:1.45rem;color:#2458a8}
+.stat span{font-size:.82rem;color:var(--muted)}
+input[type="range"]{width:100%;accent-color:var(--blue)}
+.inline{display:flex;align-items:center;gap:10px}
+.inline label{margin:0}
+.history-item{padding:11px 0;border-bottom:1px solid var(--line)}
+.history-item:last-child{border-bottom:0}
+.history-title{font-weight:700}
+footer{font-size:.88rem;color:var(--muted);text-align:center;padding:16px 8px}
+.notice{background:#fff7df;border:1px solid #f0df9e;border-radius:12px;padding:10px 12px;color:#66521a;font-size:.9rem}
+@media(max-width:520px){.row{grid-template-columns:1fr}.card{padding:13px}.stats{gap:6px}.stat{padding:9px 5px}.stat strong{font-size:1.2rem}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<h1>Speed Reading Coach 2</h1>
+<p class="subtitle">Read at your own pace. Understand, remember, and enjoy.</p>
+</header>
+
+<section class="card">
+<h2>1. Your reading material</h2>
+<label for="article">Paste your own article or text</label>
+<textarea id="article" placeholder="Paste your article here…"></textarea>
+<div class="small" id="wordCount">0 words ready</div>
+<div class="row">
+<div>
+<label for="groupSize">Words shown at a time</label>
+<select id="groupSize"><option value="2">2 words</option><option value="3" selected>3 words</option><option value="4">4 words</option></select>
+</div>
+<div>
+<label for="speed">Reading speed: <span id="speedLabel">300</span> words/min</label>
+<input id="speed" type="range" min="60" max="900" step="10" value="300">
+<div class="small">Move left for slower, right for faster.</div>
+</div>
+</div>
+<div class="controls">
+<button id="prepareBtn" class="primary">Prepare reading</button>
+<button id="clearBtn">Clear text</button>
+</div>
+</section>
+
+<section class="card">
+<h2>2. Reading practice</h2>
+<div id="readingPanel" aria-live="polite">
+<div>
+<div id="wordGroup">Your words will appear here</div>
+<div id="readingStatus">Paste an article, choose your settings, then prepare reading.</div>
+</div>
+</div>
+<div class="stats">
+<div class="stat"><strong id="elapsed">00:00</strong><span>Elapsed time</span></div>
+<div class="stat"><strong id="progress">0 / 0</strong><span>Word groups</span></div>
+<div class="stat"><strong id="liveWpm">—</strong><span>Estimated WPM</span></div>
+</div>
+<div class="controls">
+<button id="startBtn" class="primary" disabled>Start</button>
+<button id="pauseBtn" disabled>Pause</button>
+<button id="stopBtn" disabled>Stop</button>
+</div>
+<p class="small">Tip: Aim for a comfortable rhythm. If understanding drops, slow down. You can pause or stop whenever you like.</p>
+</section>
+
+<section class="card">
+<h2>3. Reflect on your session</h2>
+<div class="row">
+<div>
+<label for="understanding">Estimated understanding (%)</label>
+<input id="understanding" type="number" min="0" max="100" value="80" inputmode="numeric">
+</div>
+<div>
+<label for="retention">Estimated retention (%)</label>
+<input id="retention" type="number" min="0" max="100" value="70" inputmode="numeric">
+</div>
+</div>
+<label for="comments">Comments / what you remember</label>
+<textarea id="comments" placeholder="What did you understand? What do you remember? Was the speed comfortable?"></textarea>
+<div class="notice">When you press <b>Completed session</b>, your session counter increases by one and the session is saved on this device.</div>
+<div class="controls">
+<button id="completeBtn" class="good">Completed session (+1)</button>
+</div>
+</section>
+
+<section class="card">
+<h2>4. Your practice record</h2>
+<div class="stats">
+<div class="stat"><strong id="sessionCount">0</strong><span>Completed sessions</span></div>
+<div class="stat"><strong id="avgUnderstanding">—</strong><span>Avg. understanding</span></div>
+<div class="stat"><strong id="avgRetention">—</strong><span>Avg. retention</span></div>
+</div>
+<div class="controls">
+<button id="exportBtn">Export records (JSON)</button>
+<button id="resetBtn">Reset records</button>
+</div>
+<div id="history" class="small" style="margin-top:12px">No completed sessions yet.</div>
+</section>
+
+<footer>
+<b>Purpose:</b> Build a sustainable reading habit. The goal is not maximum speed alone—it is a useful balance of speed, comprehension, retention, and enjoyment. <br>Small Steps. Better Every Day.
+</footer>
+</main>
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const STORAGE_KEY = 'speedReadingCoach2Sessions';
+let groups = [], index = 0, timer = null, startedAt = null, elapsedBefore = 0, isRunning = false, isPrepared = false, isFinished = false;
+let sessions = loadSessions();
+
+function loadSessions(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')}catch(e){return []}}
+function saveSessions(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(sessions))}catch(e){alert('Could not save to this browser. Please export your records as a backup.')}}
+function articleWords(){return $('article').value.trim().split(/\s+/).filter(Boolean)}
+function updateWordCount(){$('wordCount').textContent = articleWords().length + ' words ready'}
+function speedMs(){return Math.max(100, Number($('groupSize').value)*60000/Number($('speed').value))}
+function formatTime(ms){let s=Math.floor(ms/1000);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+function elapsedMs(){return elapsedBefore+(isRunning&&startedAt?Date.now()-startedAt:0)}
+function updateStats(){
+ $('elapsed').textContent=formatTime(elapsedMs());
+ $('progress').textContent=(groups.length?Math.min(index,groups.length):0)+' / '+groups.length;
+ const mins=elapsedMs()/60000, readWords=Math.min(index*Number($('groupSize').value),articleWords().length);
+ $('liveWpm').textContent=mins>0?Math.round(readWords/mins):'—';
+}
+function renderGroup(){
+ if(index>=groups.length){finishReading();return}
+ $('wordGroup').textContent=groups[index];
+ $('readingStatus').textContent='Group '+(index+1)+' of '+groups.length;
+ updateStats();
+}
+function tick(){if(!isRunning)return; index++; if(index>=groups.length){finishReading();return} renderGroup(); timer=setTimeout(tick,speedMs())}
+function prepare(){
+ stopTimerOnly(); const words=articleWords();
+ if(!words.length){alert('Please paste some text first.');return}
+ const n=Number($('groupSize').value); groups=[];
+ for(let i=0;i<words.length;i+=n) groups.push(words.slice(i,i+n).join(' '));
+ index=0;elapsedBefore=0;startedAt=null;isRunning=false;isPrepared=true;isFinished=false;
+ $('wordGroup').textContent='Ready when you are';$('readingStatus').textContent=words.length+' words • '+groups.length+' groups • '+$('speed').value+' words/min';
+ $('startBtn').disabled=false;$('pauseBtn').disabled=true;$('stopBtn').disabled=true;
+ updateStats();
+}
+function start(){
+ if(!isPrepared||isFinished)return;
+ if(index>=groups.length)index=0;
+ isRunning=true;startedAt=Date.now();
+ $('startBtn').disabled=true;$('pauseBtn').disabled=false;$('stopBtn').disabled=false;
+ renderGroup();timer=setTimeout(tick,speedMs());
+}
+function pause(){
+ if(!isRunning)return;
+ clearTimeout(timer);elapsedBefore+=Date.now()-startedAt;startedAt=null;isRunning=false;
+ $('startBtn').disabled=false;$('startBtn').textContent='Continue';$('pauseBtn').disabled=true;
+ $('readingStatus').textContent='Paused at group '+Math.min(index+1,groups.length)+' of '+groups.length;updateStats();
+}
+function stopTimerOnly(){if(timer)clearTimeout(timer);timer=null}
+function stop(){
+ if(isRunning){elapsedBefore+=Date.now()-startedAt}
+ stopTimerOnly();isRunning=false;startedAt=null;isFinished=true;
+ $('startBtn').disabled=true;$('pauseBtn').disabled=true;$('stopBtn').disabled=true;
+ $('wordGroup').textContent='Reading stopped';$('readingStatus').textContent='You can reflect on your session or prepare the text again.';
+ updateStats();
+}
+function finishReading(){
+ stopTimerOnly();if(isRunning&&startedAt)elapsedBefore+=Date.now()-startedAt;
+ isRunning=false;startedAt=null;isFinished=true;index=groups.length;
+ $('wordGroup').textContent='Well done!';$('readingStatus').textContent='You reached the end of the text.';
+ $('startBtn').disabled=true;$('pauseBtn').disabled=true;$('stopBtn').disabled=true;updateStats();
+}
+function renderHistory(){
+ $('sessionCount').textContent=sessions.length;
+ const validU=sessions.filter(s=>Number.isFinite(s.understanding));
+ const validR=sessions.filter(s=>Number.isFinite(s.retention));
+ $('avgUnderstanding').textContent=validU.length?Math.round(validU.reduce((a,s)=>a+s.understanding,0)/validU.length)+'%':'—';
+ $('avgRetention').textContent=validR.length?Math.round(validR.reduce((a,s)=>a+s.retention,0)/validR.length)+'%':'—';
+ if(!sessions.length){$('history').textContent='No completed sessions yet.';return}
+ $('history').innerHTML=sessions.slice().reverse().slice(0,10).map(s=>
+ `<div class="history-item"><div class="history-title">Session ${s.number} · ${escapeHtml(s.date)}</div><div>${s.words} words · ${s.groupSize} at a time · ${s.speed} WPM · ${s.duration}</div><div>Understanding: ${s.understanding}% · Retention: ${s.retention}%</div>${s.comments?'<div>'+escapeHtml(s.comments)+'</div>':''}</div>`
+ ).join('');
+}
+function escapeHtml(str){return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+$('article').addEventListener('input',updateWordCount);
+$('speed').addEventListener('input',()=>$('speedLabel').textContent=$('speed').value);
+$('prepareBtn').addEventListener('click',prepare);
+$('clearBtn').addEventListener('click',()=>{if(isRunning)pause();$('article').value='';updateWordCount();$('wordGroup').textContent='Your words will appear here';$('readingStatus').textContent='Paste an article, choose your settings, then prepare reading.';isPrepared=false;groups=[];index=0;elapsedBefore=0;updateStats();$('startBtn').disabled=true});
+$('startBtn').addEventListener('click',start);
+$('pauseBtn').addEventListener('click',pause);
+$('stopBtn').addEventListener('click',stop);
+$('completeBtn').addEventListener('click',()=>{
+ const words=articleWords();
+ const u=Number($('understanding').value),r=Number($('retention').value);
+ if(!words.length){alert('Please paste and read an article before completing a session.');return}
+ if(!Number.isFinite(u)||u<0||u>100||!Number.isFinite(r)||r<0||r>100){alert('Enter understanding and retention between 0 and 100.');return}
+ if(isRunning){pause()}
+ const s={number:sessions.length+1,date:new Date().toLocaleString(),words:words.length,groupSize:Number($('groupSize').value),speed:Number($('speed').value),duration:formatTime(elapsedMs()),understanding:u,retention:r,comments:$('comments').value.trim(),article:$('article').value};
+ sessions.push(s);saveSessions();renderHistory();
+ $('completeBtn').textContent='Session saved ✓';setTimeout(()=>$('completeBtn').textContent='Completed session (+1)',1400);
+});
+$('exportBtn').addEventListener('click',()=>{
+ const blob=new Blob([JSON.stringify(sessions,null,2)],{type:'application/json'});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='speed-reading-coach-2-records.json';a.click();URL.revokeObjectURL(url);
+});
+$('resetBtn').addEventListener('click',()=>{if(confirm('Delete all saved practice records? This cannot be undone unless you exported them.')){sessions=[];saveSessions();renderHistory()}});
+updateWordCount();renderHistory();updateStats();
+})();
+</script>
+</body>
+</html>
