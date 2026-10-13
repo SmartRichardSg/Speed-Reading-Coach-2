@@ -157,7 +157,7 @@ function updateStats(){
 function renderGroup(){
  if(index>=groups.length){finishReading();return}
  $('wordGroup').textContent=groups[index];
- $('readingStatus').textContent='Group '+(index+1)+' of '+groups.length;
+ $('readingStatus').textContent='';
  updateStats();
 }
 function tick(){if(!isRunning)return; index++; if(index>=groups.length){finishReading();return} renderGroup(); timer=setTimeout(tick,speedMs())}
@@ -182,7 +182,7 @@ function pause(){
  if(!isRunning)return;
  clearTimeout(timer);elapsedBefore+=Date.now()-startedAt;startedAt=null;isRunning=false;
  $('startBtn').disabled=false;$('startBtn').textContent='Continue';$('pauseBtn').disabled=true;
- $('readingStatus').textContent='Paused at group '+Math.min(index+1,groups.length)+' of '+groups.length;updateStats();
+ $('readingStatus').textContent='Paused';updateStats();
 }
 function stopTimerOnly(){if(timer)clearTimeout(timer);timer=null}
 function stop(){
